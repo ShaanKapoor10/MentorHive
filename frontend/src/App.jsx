@@ -1,35 +1,61 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+/* eslint-disable no-unused-vars */
+// App.jsx
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Layout from './pages/Layout';
+import Dashboard from './pages/Dashboard';
+import MentorSlots from './pages/MentorSlots';
+import LandingPage from './pages/LandingPage';
+import SignUp from './pages/SignUp';
+import SignUpMentor from './pages/signUpMentor';
+import Login from './pages/Login';
+import ResetPassword from './pages/ResetPassword';
+import GoogleCallback from './pages/GoogleCallback';
+import MentorSearchPage from './pages/MentorSearchPage';
+import Profile from './pages/userProfile';
+import PrivateRoute from './components/PrivateRoute';
+import ChangePasswordConfirm from './components/ChangePasswordConfirm';
+import UpdateMentorSlots from './pages/UpdateMentorSlots';
+import UpcomingSessions from './pages/UpcomingSessions';
+import UserRegisteredSession from './pages/UserRegisteredSession';
+import EditProfile from './pages/EditProfile';
+import GeneralPost from './pages/GeneralPost';
+import NotFound from "./pages/NotFound"
+import ContactUs from "./pages/ContactUs"
+import About from "./components/About"
+import CommunityPage from "./pages/CommunityPage"
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/signUpMentee" element={<SignUp />} />
+      <Route path="/signUpMentor" element={<SignUpMentor />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/google-callback/:token" element={<GoogleCallback />} />
+      <Route path="/resetPassword" element={<ResetPassword />} />
+      <Route path="/reset-password/:token" element={<ChangePasswordConfirm />} />
+      <Route path="/searchPage" element={<MentorSearchPage />} />
+      <Route path="/post" element={<GeneralPost />} />
+      <Route path="/contact" element={<ContactUs />} />
+      <Route path="/about" element={<About />} />
+      <Route path="/userRegisteredSession" element={<UserRegisteredSession />} />
+      <Route path ="/community" element={<CommunityPage/>} />
+
+      {/* Use Layout wrapper for routes with Navbar and Footer */}
+      <Route element={<Layout />}>
+        <Route path="/mentors/:id" element={<Dashboard />} />
+        <Route path="/mentors/:id/slots" element={<MentorSlots />} />
+        {/* Mentor slots management route */}
+        <Route path="/mentors/:id/manage-slots" element={<UpdateMentorSlots/>} />
+        <Route path='/mentors/:id/upComing-Sessions' element={<UpcomingSessions/>}/>
+        <Route path='/profile/update' element={<EditProfile/>}/>
+      </Route>
+      <Route element={<PrivateRoute />}>
+        <Route path="/profile" element={<Profile />} />
+      </Route>
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
 }
 
-export default App
+export default App;
