@@ -1,78 +1,177 @@
-/* eslint-disable no-unused-vars */
-// CommunityPage.jsx
-import React from 'react';
-import PostCard from '../components/MentorPostCard';
-import CommunityShortcut from '../components/CommunityShortcut';
+import React, { useState, useEffect } from 'react';
+import { Avatar, Chip, Card, CardContent, Typography, IconButton, Button, Tooltip } from '@mui/material';
+import { LocationOn, Star, CheckCircle, AccessTime, Phone, Group } from '@mui/icons-material';
+import Testimonial from './Testimonial';
+import { NavLink, useParams, Outlet } from 'react-router-dom';
+import axios from 'axios';
 
-const CommunityPage = () => {
-  // Sample post data with images
-  const posts = [
-    { 
-      title: "Mentor Post 1", 
-      content: "This is the content of Mentor Post 1.", 
-      image: "https://via.placeholder.com/300x200" 
-    },
-    { 
-      title: "Mentor Post 2", 
-      content: "This is the content of Mentor Post 2.", 
-      image: "https://via.placeholder.com/300x200" 
-    },
-    { 
-      title: "Mentor Post 3", 
-      content: "This is the content of Mentor Post 3.", 
-      image: "https://via.placeholder.com/300x200" 
-    },
-    // Add more posts as needed
-  ];
-  const communities = [
-    "Community 1",
-    "Community 2",
-    "Community 3",
-    "Community 4",
-    "Community 5",
-    // Add more as needed
-  ];
+const Dashboard = () => {
+  const [tooltipOpen, setTooltipOpen] = useState(false);
+  const [showMore, setShowMore] = useState(false);
+  const { id } = useParams();
+  const [mentor, setMentor] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const handleCommunityClick = (communityName) => {
-    alert(`You clicked on ${communityName}`);
+  useEffect(() => {
+    const fetchMentor = async () => {
+      try {
+        const response = await axios.get(`http://localhost:3000/mentors/${id}`);
+        setMentor(response.data.mentor);
+      } catch (error) {
+        console.error("Error fetching mentor details:", error);
+        setError("Error fetching mentor details");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMentor();
+  }, [id]);
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>{error}</p>;
+  if (!mentor) return <p>No Mentor Found.....</p>;
+
+  const allSkills = mentor.skills && mentor.skills.length > 0 
+    ? mentor.skills 
+    : [
+        'React', 'Node.js', 'JavaScript', 'HTML/CSS', 'MongoDB', 
+        'Express.js', 'Tailwind CSS', 'Material UI', 'TypeScript', 
+        'GraphQL', 'Redux', 'Next.js'
+      ];
+
+  const handleTooltipOpen = () => {
+    setTooltipOpen(!tooltipOpen);
   };
 
+  const handleTooltipClose = () => {
+    setTooltipOpen(false);
+  };
+
+  const skillsToShow = showMore ? allSkills : allSkills.slice(0, 6);
+
   return (
-    <div className="flex p-6 font-sans">
-      {/* Sidebar */}
-      <div className="w-1/5 flex flex-col border-r border-gray-300 p-4">
-        <h3 className="text-lg font-semibold mb-4">Joined Communities</h3>
-            <div className="overflow-y-auto max-h-[70vh] flex flex-col space-y-2">
-                {communities.map((community, index) => (
-                <CommunityShortcut 
-                    key={index} 
-                    name={community} 
-                    onClick={() => handleCommunityClick(community)} 
-                />
-                ))}
-            </div>
-        </div>
-
-
-      {/* Content Area */}
-      <div className="w-4/5 pl-6">
-        <div className="border-b border-gray-300 pb-4 mb-6">
-          <h2 className="text-2xl font-bold">Community Name</h2>
-        </div>
-
-        <div className="space-y-6">
-          {posts.map((post, index) => (
-            <PostCard 
-              key={index} 
-              title={post.title} 
-              content={post.content} 
-              image={post.image} 
+    <>
+      <div className="w-full h-screen p-4">
+        <div className="bg-blue-900 h-1/3 relative flex items-end">
+          <div className="absolute left-4 -bottom-12">
+            <Avatar
+              alt={mentor.name}
+              src={mentor.profilePicture}
+              className="w-40 h-40 border-4 border-white"
+              sx={{ width: 160, height: 160 }}
             />
-          ))}
+          </div>
+        </div>
+
+        <div className="bg-white flex justify-between px-4 pt-16">
+          <div className="flex-grow pr-6">
+            <div className="text-left">
+              <h1 className="text-2xl font-bold text-gray-800">{mentor.name}</h1>
+              <p className="text-gray-600">{`${mentor.jobTitle} @ ${mentor.company}`}</p>
+
+              <div className="flex items-center mt-1 text-gray-500">
+                <LocationOn fontSize="small" />
+                <span className="ml-2">{mentor.location}</span>
+              </div>
+
+              <div className="flex items-center mt-1 text-gray-500">
+                <Star fontSize="small" className="text-yellow-500" />
+                <span className="ml-2">
+                  {mentor.ratings} ({mentor.reviews_cnt} reviews)
+                </span>
+              </div>
+
+              <div className="flex items-center mt-1 text-gray-500">
+                <CheckCircle fontSize="small" className="text-green-500" />
+                <span className="ml-2">Active this month</span>
+              </div>
+
+              <div className="flex items-center mt-1 text-gray-500">
+                <AccessTime fontSize="small" />
+                <Tooltip
+                  title="Definition: Typically responds in half a day."
+                  arrow
+                  open={tooltipOpen}
+                  onClose={handleTooltipClose}
+                >
+                  <span
+                    className="ml-2 cursor-pointer text-blue-500 underline"
+                    onClick={handleTooltipOpen}
+                  >
+                    Usually responds in half a day
+                  </span>
+                </Tooltip>
+              </div>
+            </div>
+
+            <Card className="mt-6 w-full" sx={{ maxWidth: 400 }}>
+              <CardContent>
+                <Typography variant="h6" component="div" className="text-gray-800 font-semibold">
+                  Session
+                </Typography>
+                <div className="flex flex-col gap-4 mt-4">
+                  <div className="flex items-center gap-2">
+                    <IconButton color="primary">
+                      <Phone />
+                    </IconButton>
+                    <NavLink to={`/mentors/${id}/slots`}>
+                    <Button variant="outlined" color="primary">
+                      Book a Call
+                    </Button>
+                  </NavLink>
+
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <IconButton color="primary">
+                      <Group />
+                    </IconButton>
+                    <Button variant="outlined" color="primary">
+                      Join Community
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="ml-4 w-1/3">
+            <h2 className="text-lg font-semibold text-gray-800">Skills</h2>
+            <div className="flex flex-wrap gap-1 mt-2">
+              {skillsToShow.map((skill, index) => (
+                <Chip key={index} label={skill} color="primary" />
+              ))}
+            </div>
+
+            <div className="mt-2">
+              <a
+                href="#"
+                className="text-blue-500 cursor-pointer"
+                onClick={() => setShowMore(!showMore)}
+              >
+                {showMore ? 'Show Less' : 'Show More'}
+              </a>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+      <div className="flex justify-center min-h-screen items-center py-3 px-2">
+        <div className="bg-slate flex flex-col items-center justify-center drop-shadow-lg rounded-lg max-w w-full p-20">
+          <div className="w-full">
+            <h2 className=" text-lg lg:text-4xl font-bold text-start mb-4">
+              About
+            </h2>
+            <p className="text-justify text-gray-700 text-xl">
+              {mentor.bio}
+            </p>
+          </div>
+        </div>
+      </div>
+      <Testimonial reviews={mentor.reviews} />
+    </>
   );
 };
 
-export default CommunityPage;
+export default Dashboard;
+

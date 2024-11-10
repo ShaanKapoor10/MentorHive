@@ -314,4 +314,3 @@ const MentorSearchPage = () => {
 };
 
 export default MentorSearchPage;
-//isme ek catch hai agar mentor loginned h toh to uska card dihkhanaa toh worth it nhi h kyon?
