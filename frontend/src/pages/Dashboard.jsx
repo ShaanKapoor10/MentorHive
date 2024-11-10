@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 
 // import React, { useState, useEffect } from 'react';
 // import { Avatar, Chip, Card, CardContent, Typography, IconButton, Button, Tooltip } from '@mui/material';
@@ -202,11 +203,11 @@
 import React, { useState, useEffect } from 'react';
 import { Avatar, Chip, Card, CardContent, Typography, IconButton, Button, Tooltip } from '@mui/material';
 import { LocationOn, Star, CheckCircle, AccessTime, Phone, Group } from '@mui/icons-material';
-import Navbar from "../components/NavbarLandingPage";
-import Footer from "../components/footer";
 import Testimonial from './Testimonial';
 import { NavLink, useParams, Outlet } from 'react-router-dom';
 import axios from 'axios';
+import { useSelector } from 'react-redux';
+import toast from 'react-hot-toast';
 
 const Dashboard = () => {
   const [tooltipOpen, setTooltipOpen] = useState(false);
@@ -215,7 +216,12 @@ const Dashboard = () => {
   const [mentor, setMentor] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [communityJoined, setCommunityJoined] = useState(false); // State to track community join status
 
+
+  const loggedMentorId = useSelector((state) => state.mentor.data?._id);
+  const loggedMenteeId = useSelector((state) => state.mentee.data?._id); // Get mentee & mentor ID from Redux
+  const token = useSelector((state) => state.auth.token);
   useEffect(() => {
     const fetchMentor = async () => {
       try {
@@ -231,6 +237,54 @@ const Dashboard = () => {
 
     fetchMentor();
   }, [id]);
+
+  useEffect(() => {
+    // Check if mentee is already in the community
+   
+    const checkCommunityStatus = async () => {
+      if (loggedMenteeId) {
+        try {
+          const response = await axios.get(`http://localhost:3000/community/${id}/check-mentee/${loggedMenteeId}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          setCommunityJoined(response.data.isMember);
+        } catch (error) {
+          console.error("Error checking community status", error);
+        }finally{
+           console.log(communityJoined)
+        }
+      }
+    };
+    checkCommunityStatus();
+  }, [id, loggedMenteeId, token]);
+
+  const joinCommunity = async () => {
+  try {
+    if (!token) {
+      // If no token, prompt login
+      toast.error("Please log in first.");
+      return;
+    }
+
+    // Call the backend route to check/join community
+    const response = await axios.get(`http://localhost:3000/community/${id}/check-join`, {
+      headers: {
+        Authorization: `Bearer ${token}`, // Pass token for authentication
+      },
+    });
+
+    if (response.data.joined) {
+      setCommunityJoined(true);
+      toast.success(response.data.message);
+    } else {
+      toast.error("Unable to join community");
+    }
+  } catch (error) {
+    console.error("Error joining community:", error);
+    toast.error("Error joining community.");
+  }
+};
+
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
@@ -309,34 +363,37 @@ const Dashboard = () => {
               </div>
             </div>
 
-            <Card className="mt-6 w-full" sx={{ maxWidth: 400 }}>
-              <CardContent>
-                <Typography variant="h6" component="div" className="text-gray-800 font-semibold">
-                  Session
-                </Typography>
-                <div className="flex flex-col gap-4 mt-4">
-                  <div className="flex items-center gap-2">
-                    <IconButton color="primary">
-                      <Phone />
-                    </IconButton>
-                    <NavLink to={`/mentors/${id}/slots`}>
-  <Button variant="outlined" color="primary">
-    Book a Call
-  </Button>
-</NavLink>
-
+            
+            {loggedMentorId !== id && (
+              <Card className="mt-6 w-full" sx={{ maxWidth: 400 }}>
+                <CardContent>
+                  <Typography variant="h6" component="div" className="text-gray-800 font-semibold">
+                    Session
+                  </Typography>
+                  <div className="flex flex-col gap-4 mt-4">
+                    <div className="flex items-center gap-2">
+                      <IconButton color="primary">
+                        <Phone />
+                      </IconButton>
+                      <NavLink to={`/mentors/${id}/slots`}>
+                        <Button variant="outlined" color="primary">
+                          Book a Call
+                        </Button>
+                      </NavLink>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <IconButton color="primary">
+                        <Group />
+                      </IconButton>
+                      <Button variant="outlined" color="primary" onClick={joinCommunity}>
+                        
+                    {communityJoined ? "Open Community" : "Join Community"}
+                  </Button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <IconButton color="primary">
-                      <Group />
-                    </IconButton>
-                    <Button variant="outlined" color="primary">
-                      Join Community
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           <div className="ml-4 w-1/3">
