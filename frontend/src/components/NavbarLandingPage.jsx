@@ -19,6 +19,7 @@ import { clearToken } from '../slices/authSlice';
 import { clearMenteeData } from '../slices/menteeSlice';
 import { clearMentorData } from '../slices/mentorSlice';
 
+
 function ResponsiveAppBar() {
   const navigate = useNavigate();
   const [anchorElUser, setAnchorElUser] = React.useState(null);
@@ -28,7 +29,16 @@ function ResponsiveAppBar() {
   const token = useSelector((state) => state.auth.token);
   const role = useSelector((state) => state.auth.role);
   const mentorData = useSelector((state) => state.mentor.data);
+  const menteeData = useSelector((state) => state.mentee.data);
   console.log(mentorData);
+  console.log(menteeData);
+
+  // Determine the avatar source based on the role and data availability
+  const avatarSrc = role === 'mentor' && mentorData?.profilePicture
+    ? mentorData.profilePicture
+    : role === 'mentee' && menteeData?.profilePicture
+    ? menteeData.profilePicture
+    : 'https://randomuser.me/api/portraits/men/32.jpg'; // Default user image
 
   // Track and set mentorId only if role is mentor and mentorData is loaded
   const mentorId = mentorData?._id;
@@ -37,16 +47,17 @@ function ResponsiveAppBar() {
   const settings = role === 'mentee'
     ? [
         { name: 'Profile', path: '/profile' },
-        { name: 'Communities', path: '/communities' },
+        { name: 'EditProfile', path: '/profile/update' },
+        { name: 'Communities', path: '/community' },
         { name: 'Settings', path: '/settings' },
-        { name: 'Dashboard', path: '/dashboard' },
+        { name: 'Registered Session', path: '/userRegisteredSession' },
       ]
     : role === 'mentor' && mentorId
     ? [
         { name: 'Dashboard', path: `/mentors/${mentorId}` },
         { name: 'Manage-Slots', path: `/mentors/${mentorId}/manage-slots` },
         { name: 'UpComing-Sessions', path: `/mentors/${mentorId}/upComing-Sessions`},
-        { name: 'Edit Profile', path: '/editProfile' },
+        { name: 'EditProfile', path: '/profile/update' },
         { name: 'Settings', path: '/settings' },
       ]
     : [];
@@ -94,7 +105,7 @@ function ResponsiveAppBar() {
                 Mentors
               </Button>
             </NavLink>
-
+            <NavLink to='/post'>
             <Button
               onClick={() => console.log('Post clicked')}
               className="hover:bg-slate-800"
@@ -111,7 +122,8 @@ function ResponsiveAppBar() {
             >
               Post
             </Button>
-
+            </NavLink>
+            <NavLink to='/contact'>
             <Button
               onClick={() => console.log('Contact clicked')}
               className="hover:bg-slate-800"
@@ -128,7 +140,8 @@ function ResponsiveAppBar() {
             >
               Contact
             </Button>
-
+            </NavLink>
+            <NavLink to='/about'>
             <Button
               onClick={() => console.log('About clicked')}
               className="hover:bg-slate-800"
@@ -145,6 +158,7 @@ function ResponsiveAppBar() {
             >
               About
             </Button>
+            </NavLink>
           </Box>
 
           <Box sx={{ flexGrow: 0, display: { xs: 'none', md: 'flex' } }}>
@@ -156,7 +170,7 @@ function ResponsiveAppBar() {
               <>
                 <Tooltip title="Open settings">
                   <IconButton onClick={handleOpenUserMenu}>
-                    <Avatar alt="User Avatar" src="https://randomuser.me/api/portraits/men/32.jpg" />
+                    <Avatar alt="User Avatar" src={avatarSrc} />
                   </IconButton>
                 </Tooltip>
                 <Menu
