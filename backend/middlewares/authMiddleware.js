@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const Mentee = require('../Models/Mentee');
+const Mentee = require('../models/Mentee');
 const Mentor = require('../models/Mentor'); // Assuming you have a Mentor model
 const { decode } = require('punycode');
 
