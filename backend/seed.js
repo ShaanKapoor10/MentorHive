@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const connectDB = require('./config/db');
-const Mentor = require('./models/Mentor');
+const Mentor = require('./Models/Mentor');
 
 // Sample data for the mentors
 const mentors = [
